@@ -8,12 +8,18 @@ import {
     Patch,
     Post,
     Query,
+    UseInterceptors, // Tools to intercept the outgoing response
+    ClassSerializerInterceptor, // Tools to intercept the outgoing response
 } from '@nestjs/common';
 import { CreateUserDto } from './dtos/create-user.dto';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dtos/update-user.dto';
+import { UserDto } from './dtos/user.dto';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
 
 @Controller('auth') // Changes route name to /auth/
+// @UseInterceptors(ClassSerializerInterceptor) NestJs recommended
+@Serialize(UserDto) // Custom interceptor
 export class UsersController {
     constructor(private userService: UsersService) {}
     @Post('/signup')
@@ -21,11 +27,10 @@ export class UsersController {
         this.userService.create(body.email, body.password);
     }
 
-    // We can choose to throw errors/exceptions in the service or controller
     @Get('/:id')
     async findUser(@Param('id') id: string) {
         // id is a string because the param is parsed as a string
-
+        // We can choose to throw errors/exceptions in the service or controller
         const user = await this.userService.findOne(parseInt(id));
 
         if (!user) {
